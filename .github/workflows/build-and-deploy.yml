@@ -1,0 +1,66 @@
+name: Build and deploy
+
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: 'pages'
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up emsdk
+        uses: emscripten-core/setup-emsdk@v15
+        with:
+          version: 5.0.7
+          actions-cache-folder: 'emsdk-cache'
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: 'npm'
+
+      - name: Download CLIPS source code, extract it and merge with existing sources
+        run: |
+          wget https://sourceforge.net/projects/clipsrules/files/CLIPS/6.4.2/clips_core_source_642.tar.gz
+          tar xzf clips_core_source_642.tar.gz
+          rm -f clips_core_source_642.tar.gz
+          cp -RTn clips_core_source_642/ clips_core_source/
+
+      - name: Build CLIPS
+        run: cd clips_core_source/core && emmake make -f Makefile -j4
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build the project
+        run: npm run build
+
+      - name: Set up Pages
+        uses: actions/configure-pages@v6
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: './dist'
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
+

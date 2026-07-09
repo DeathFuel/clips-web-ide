@@ -1,4 +1,8 @@
-clips_core_source_642/*
+clips_core_source/*
+!clips_core_source/core
+clips_core_source/core/*
+!clips_core_source/core/Makefile
+!clips_core_source/core/clipsfun.c
 src/clips.js
 src/clips.wasm
 node_modules/
