@@ -36,14 +36,15 @@ jobs:
           node-version: lts/*
           cache: 'npm'
 
-      - name: Download CLIPS source code
+      - name: Download CLIPS source code, extract it and merge with existing sources
         run: |
           wget https://sourceforge.net/projects/clipsrules/files/CLIPS/6.4.2/clips_core_source_642.tar.gz
           tar xzf clips_core_source_642.tar.gz
           rm -f clips_core_source_642.tar.gz
+          cp -RTn clips_core_source_642/ clips_core_source/
 
       - name: Build CLIPS
-        run: emmake make -j4
+        run: cd clips_core_source/core && emmake make -f Makefile -j4
 
       - name: Install dependencies
         run: npm ci
