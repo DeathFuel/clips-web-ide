@@ -1,4 +1,4 @@
-WEB_SRC := src
+WEB_SRC := ../../src
 CLP_SRC := .
 OUT_DIR := $(CLP_SRC)/out
 TARGET  := clips
