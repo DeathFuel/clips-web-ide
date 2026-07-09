@@ -1,0 +1,132 @@
+html, body
+{
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    background-color: #ccc;
+}
+
+*
+{
+    box-sizing: border-box;
+    font-size: 12px;
+    font-family: monospace;
+}
+
+.content
+{
+    width: 100%;
+    height: 100%;
+}
+
+.split {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+}
+
+.gutter {
+    background-color: #fff;
+    background-repeat: no-repeat;
+    background-position: 50%;
+}
+
+.gutter.gutter-horizontal {
+    background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAMAAAAeCAYAAADpYKT6AAAAAXNSR0IB2cksfwAAAARnQU1BAACxjwv8YQUAAAAgY0hSTQAAeiYAAICEAAD6AAAAgOgAAHUwAADqYAAAOpgAABdwnLpRPAAAACdJREFUGNNjYGBgYDhz5sx/BgYGBkYYg4GBgYGJAQmMcqjNYUAOeABI9wphe9kG5QAAAABJRU5ErkJggg==");
+    cursor: col-resize;
+}
+
+.tab-container {
+    background-color: white;
+}
+
+.tab-bar {
+    display: flex;
+    background-color: #eee;
+}
+
+.tab {
+    padding: 5px 10px;
+    cursor: pointer;
+    background-color: #ddd;
+}
+
+.tab.active {
+    background-color: white;
+    font-weight: bold;
+}
+
+.tab-content {
+    display: none;
+    padding: 40px;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.fill-column
+{
+    padding: 9px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+#outputLog
+{
+    resize: none;
+    width: 100%;
+    flex: 1;
+    margin: 0 0 6px 0;
+    padding: 6px;
+}
+
+.below-batch-input
+{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.below-output-log
+{
+    display: flex;
+    align-items: center;
+}
+
+#inputConsole
+{
+    flex: 1;
+    resize: none;
+}
+
+#enterButton
+{
+    margin: 0 0 0 6px;
+}
+
+#batchInput
+{
+    flex: 1;
+    resize: none;
+    margin: 0 0 6px 0;
+}
+
+button
+{
+    padding: 2px 9px;
+}
+
+#sendButton
+{
+    margin: 0 0 0 6px;
+}
+
+input
+{
+    margin: 2px 9px 2px 2px;
+}

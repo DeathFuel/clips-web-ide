@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>WIP CLIPS Web IDE</title>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="icon.png"/>
+</head>
+<body>
+    <div class="content">
+	<div class="split">
+	    <div id="split-left">
+		<div class="fill-column">
+		    <textarea id="batchInput"></textarea>
+		    <div class="below-batch-input">
+			<input type="checkbox" id="clearOnSend" checked />
+			<label for="clearOnSend">Clear console and restart CLIPS on send</label>
+			<div style="flex: 1"></div>
+			<button id="sendButton">Send to CLIPS</button>
+		    </div>
+		</div>
+	    </div>
+	    <div id="split-right">
+		<div class="fill-column">
+		    <textarea readonly id="outputLog"></textarea>
+		    <div class="below-output-log">
+			<textarea id="inputConsole" rows="1"></textarea>
+			<button id="enterButton">Enter</button>
+		    </div>
+		</div>
+	    </div>
+	</div>
+    </div>
+    <script type="module" src="src/main.js"></script>
+    <script type="module" src="src/clips.js"></script>
+</body>
+</html>
