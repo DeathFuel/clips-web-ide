@@ -9,7 +9,7 @@ on:
 
 env:
   CLIPS_SRC_ARCHIVE: clips_core_source_642.tar.gz
-  CLIPS_DL_URL: https://sourceforge.net/projects/clipsrules/files/CLIPS/6.4.2/${{ env.CLIPS_SRC_ARCHIVE }}
+  CLIPS_DL_URL: https://sourceforge.net/projects/clipsrules/files/CLIPS/6.4.2/clips_core_source_642.tar.gz
 
 jobs:
   build:
@@ -40,7 +40,7 @@ jobs:
 
       - if: ${{ steps.cache-clips.outputs.cache-hit != 'true' }}
         name: Download CLIPS source code
-        run: wget https://sourceforge.net/projects/clipsrules/files/CLIPS/6.4.2/clips_core_source_642.tar.gz
+        run: wget ${{ env.CLIPS_DL_URL }}
 
       - name: Extract CLIPS source code and merge with existing sources
         run: |
