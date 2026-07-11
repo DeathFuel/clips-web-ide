@@ -60,5 +60,5 @@ jobs:
         name: Upload ./dist as an artifact only if it's needed
         uses: actions/upload-artifact@v7
         with:
-          name: dist-${{ GITHUB_SHA }}
+          name: dist-${{ github.sha }}
           path: './dist'
