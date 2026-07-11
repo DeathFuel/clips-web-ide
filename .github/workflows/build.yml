@@ -55,3 +55,10 @@ jobs:
 
       - name: Build the project
         run: npm run build
+
+      - if: ${{ github.event_name == 'workflow_call' }}
+        name: Upload ./dist as an artifact only if it's needed
+        uses: actions/upload-artifact@v7
+        with:
+          name: dist-${{ GITHUB_SHA }}
+          path: './dist'
