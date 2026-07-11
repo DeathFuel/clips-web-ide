@@ -44,8 +44,7 @@ jobs:
 
       - name: Extract CLIPS source code and merge with existing sources
         run: |
-          tar xzf clips_core_source_642.tar.gz
-          rm -f clips_core_source_642.tar.gz
+          tar xzf ${{ env.CLIPS_SRC_ARCHIVE }}
           cp -RTn clips_core_source_642/ clips_core_source/
 
       - name: Build CLIPS
