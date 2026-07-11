@@ -1,0 +1,57 @@
+name: Build
+
+on:
+  push:
+    branches: ['master']
+  pull_request:
+    branches: ['master']
+  workflow_call:
+
+env:
+  CLIPS_SRC_ARCHIVE: clips_core_source_642.tar.gz
+  CLIPS_DL_URL: https://sourceforge.net/projects/clipsrules/files/CLIPS/6.4.2/clips_core_source_642.tar.gz
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Set up emsdk
+        uses: emscripten-core/setup-emsdk@v15
+        with:
+          version: 5.0.7
+          actions-cache-folder: 'emsdk-cache'
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+          cache: 'npm'
+
+      - name: Cache CLIPS source code
+        id: cache-clips
+        uses: actions/cache@v6
+        with:
+          path: ${{ env.CLIPS_SRC_ARCHIVE }}
+          key: ${{ env.CLIPS_SRC_ARCHIVE }}
+
+      - if: ${{ steps.cache-clips.outputs.cache-hit != 'true' }}
+        name: Download CLIPS source code
+        run: wget ${{ env.CLIPS_DL_URL }}
+
+      - name: Extract CLIPS source code and merge with existing sources
+        run: |
+          tar xzf ${{ env.CLIPS_SRC_ARCHIVE }}
+          cp -RTn clips_core_source_642/ clips_core_source/
+
+      - name: Build CLIPS
+        run: cd clips_core_source/core && emmake make -f Makefile -j4
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build the project
+        run: npm run build
