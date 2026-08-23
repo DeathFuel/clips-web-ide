@@ -5,5 +5,7 @@ clips_core_source/core/*
 !clips_core_source/core/clipsfun.c
 src/clips.js
 src/clips.wasm
+src/emcc-tsd.d.ts
+*.sh
 node_modules/
 dist/
