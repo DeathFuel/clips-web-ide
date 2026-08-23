@@ -48,7 +48,10 @@ jobs:
           cp -RTn clips_core_source_642/ clips_core_source/
 
       - name: Build CLIPS
-        run: cd clips_core_source/core && emmake make -f Makefile -j4
+        run: |
+          mv tsconfig.json tsconfig.json.disabled
+          cd clips_core_source/core && emmake make -f Makefile -j4
+          mv tsconfig.json.disabled tsconfig.json
 
       - name: Install dependencies
         run: npm ci
