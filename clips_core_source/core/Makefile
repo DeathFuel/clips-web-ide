@@ -10,6 +10,7 @@ EMFLAGS	:= -Os \
 		   -s EXPORTED_FUNCTIONS=_CreateEnvironment,_DestroyEnvironment,_free \
 		   -s EXPORTED_RUNTIME_METHODS=ccall,cwrap,UTF8ToString,getValue \
 		   -s ALLOW_MEMORY_GROWTH -s MODULARIZE -s EXPORT_ES6 -s EXPORT_NAME="makeModule" \
+		   --emit-tsd $(WEB_SRC)/emcc-tsd.d.ts \
 		   -s EMULATE_FUNCTION_POINTER_CASTS # fixes defmodule issues
 
 SOURCES := $(filter-out $(CLP_SRC)/main.c, $(shell find $(CLP_SRC) -type f -name '*.c'))
