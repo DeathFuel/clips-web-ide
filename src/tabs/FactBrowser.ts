@@ -20,6 +20,7 @@ export default class FactBrowser extends TabBase {
 
 	private selectedModule: string = "MAIN";
 	private lastSelectedFactIndex: number = 0;
+	private lastSelectedFactPosition: number = 0;
 
 	constructor() {
 		let node = document.createElement("div");
@@ -124,6 +125,7 @@ export default class FactBrowser extends TabBase {
 		this.factList.querySelectorAll("tbody").forEach((e: HTMLTableSectionElement) => e.remove());
 		let tbody = this.factList.createTBody();
 
+
 		for (let i = 0; i < facts.length; i++) {
 			let fact = facts[i];
 			let row = tbody.insertRow(-1);
@@ -139,11 +141,21 @@ export default class FactBrowser extends TabBase {
 
 			row.addEventListener("click", (_) => {
 				this.lastSelectedFactIndex = fact.index;
+				this.lastSelectedFactPosition = i;
 				this.showFact(fact.data);
 			});
 
+		}
+
+		for (const fact of facts) {
 			if (fact.index == this.lastSelectedFactIndex) {
 				this.showFact(fact.data);
+			}
+		}
+
+		for (let i = 0; i < facts.length; i++) {
+			if (i == this.lastSelectedFactPosition) {
+				this.showFact(facts[i].data);
 			}
 		}
 	}

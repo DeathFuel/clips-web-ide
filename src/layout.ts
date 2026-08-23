@@ -9,6 +9,7 @@ import Terminal from "./tabs/Terminal.ts"
 import TabBase from "./tabs/TabBase.ts";
 
 import exampleCollatz from "./examples/collatz.clp?raw"
+import exampleSorting from "./examples/sort.clp?raw"
 import { CLIPSWatchItems, Environment, Module } from "./logic.ts";
 
 // commands & menubar menus
@@ -84,7 +85,8 @@ watchMenu.addItem({ command: "watch:none" });
 // examples
 
 ([
-	[ "Collatz", exampleCollatz ]
+	[ "Collatz", exampleCollatz ],
+	[ "Sorting", exampleSorting ]
 ] as [string, string][]).forEach(([name, str]: [string, string]) => {
 	let commandId = "example:" + name.toLowerCase().replace(" ", "-");
 	commands.addCommand(commandId, {
@@ -94,7 +96,7 @@ watchMenu.addItem({ command: "watch:none" });
 				// TODO make this a bit smarter
 				dock.addWidget(batch, { ref: term });
 			}
-			batch.setBatchInput(str);
+			batch.setBatchInput(str.trim());
 		}
 	});
 	exampleMenu.addItem({ command: commandId });

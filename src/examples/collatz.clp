@@ -11,16 +11,9 @@
     (test (> ?n 1))
     =>
     (bind ?m (collatz ?n))
-    (print ?n " -> ")
+    (println ?n " -> " ?m)
     (retract ?f)
     (assert (number ?m))
-)
-
-(defrule print-one
-    ?f <- (number ?n)
-    (test (= ?n 1))
-    =>
-    (println "1")
 )
 
 (deffacts init (number 27))
