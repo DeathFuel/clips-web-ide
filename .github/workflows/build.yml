@@ -22,7 +22,7 @@ jobs:
       - name: Set up emsdk
         uses: emscripten-core/setup-emsdk@v16
         with:
-          version: 6.0.9
+          version: 6.0.8
           actions-cache-folder: 'emsdk-cache'
 
       - name: Set up Node
