@@ -16,6 +16,8 @@ import { CLIPSWatchItems, Environment, Module } from "./logic.ts";
 
 const commands = new CommandRegistry();
 
+let themeMenu = new Menu({ commands });
+themeMenu.title.label = "Theme";
 let tabMenu = new Menu({ commands });
 tabMenu.title.label = "Tabs";
 let watchMenu = new Menu({ commands });
@@ -24,6 +26,21 @@ let exampleMenu = new Menu({ commands });
 exampleMenu.title.label = "Examples";
 let helpMenu = new Menu({ commands });
 helpMenu.title.label = "Help";
+
+// theme menu
+
+const bodyClasses = document.body.classList;
+commands.addCommand("theme:light", {
+	label: "Light",
+	execute: () => { bodyClasses.remove("dark"); },
+});
+themeMenu.addItem({ command: "theme:light" });
+
+commands.addCommand("theme:dark", {
+	label: "Dark",
+	execute: () => { bodyClasses.add("dark"); },
+});
+themeMenu.addItem({ command: "theme:dark" });
 
 // tabs & tab menu
 
@@ -55,7 +72,7 @@ tabs.forEach((tab: TabBase) => {
 	tabMenu.addItem({ command: commandId });
 });
 
-// watch commands
+// watch menu
 
 CLIPSWatchItems.forEach((str: string) => {
 	let commandId = "watch:" + str.toLowerCase().replace(" ", "-");
@@ -82,7 +99,7 @@ commands.addCommand("watch:none", {
 });
 watchMenu.addItem({ command: "watch:none" });
 
-// examples
+// examples menu
 
 ([
 	[ "Collatz", exampleCollatz ],
@@ -119,6 +136,7 @@ helpMenu.addItem({ command: "help:source" });
 // widgets
 
 let bar = new MenuBar();
+bar.addMenu(themeMenu);
 bar.addMenu(tabMenu);
 bar.addMenu(watchMenu);
 bar.addMenu(exampleMenu);

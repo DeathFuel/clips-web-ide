@@ -1,22 +1,70 @@
 @import "@lumino/default-theme/style/index.css";
 
 :root {
-	--bg-page: #dddddd;
-	--bg-tab: #ffffff;
-	--bg-hover: #f0f0f0;
+	--sans-serif: "Helvetica", "FreeSans", "Arial", sans-serif;
+	--mono: "Cascadia Code", "JetBrains Mono", "Consolas", "DejaVu Sans Mono", "Courier New", monospace;
 
-	--table-stripe: #f7f8fa;
+	--bg-page: #ddd;
+	--bg-tab: #fff;
+	--bg-hover: #eee;
+	--bg-translucent: #fff8;
+
+	--tab-dimmed-1: #e5e5e5;
+	--tab-dimmed-2: #f0f0f0;
+
 	--table-header: #f0f2f5;
-	--table-selection: #dbe9f9;
+	--table-stripe: #f7f8fa;
 
-	--border: #c0c0c0;
-	--border-soft: #e2e2e2;
+	--border: #bbb;
 
-	--text: #000000;
-	--text-dim: #5f6368;
+	--text: #000;
+	--text-table-header: #666;
 
-	--accent: #afcfff;
-	--accent-soft: rgba(47, 111, 178, 0.15);
+	--accent: #acf;
+	--accent-soft: #e0efff;
+
+	--scrollbar: #999;
+
+	--button-bg-1: #eee;
+	--button-bg-2: #ddd;
+	--button-bg-3: #ccc;
+	--button-border-1: #aaa;
+	--button-border-2: #888;
+
+	--menubar-bg: #fafafa;
+	--menubar-text: rgba(0, 0, 0, 0.87);
+}
+
+.dark {
+	--bg-page: #050505;
+	--bg-tab: #111;
+	--bg-hover: #222;
+	--bg-translucent: #3338;
+
+	--tab-dimmed-1: #050505;
+	--tab-dimmed-2: #0d0d0d;
+
+	--table-header: #191919;
+	--table-stripe: #171717;
+
+	--border: #333;
+
+	--text: #ccc;
+	--text-table-header: #ddd;
+
+	--accent: #037;
+	--accent-soft: #024;
+
+	--scrollbar: #666;
+
+	--button-bg-1: #111;
+	--button-bg-2: #171717;
+	--button-bg-3: #222;
+	--button-border-1: #444;
+	--button-border-2: #666;
+
+	--menubar-bg: #111;
+	--menubar-text: rgba(255, 255, 255, 0.87);
 }
 
 html, body {
@@ -25,7 +73,7 @@ html, body {
 	padding: 0;
 	margin: 0;
 	background-color: var(--bg-page);
-	font-family: "Helvetica", "FreeSans", "Arial", sans-serif;
+	font-family: var(--sans-serif);
 	color: var(--text);
 }
 
@@ -53,19 +101,23 @@ body {
 
 	& textarea {
 		flex: 1 1 0;
-		line-height: 1.25;
-		font-family: "Cascadia Code", "JetBrains Mono", "Consolas", "DejaVu Sans Mono", "Courier New", monospace;
+		font-family: var(--mono);
 		font-size: 12px;
 		color: var(--text);
 		background: var(--bg-tab);
 		border: 1px solid var(--border);
 		border-radius: 3px;
 		padding: 4px;
-		scrollbar-width: thin;
-		scrollbar-color: #b5b5b5 transparent;
+		scrollbar-color: var(--scrollbar) transparent;
 		white-space: pre-wrap;
 		resize: none;
 		min-height: 0;
+
+		&:focus {
+			outline: none;
+			border-color: var(--accent);
+			box-shadow: 0 0 0 2px var(--accent-soft);
+		}
 	}
 
 	& button {
@@ -74,18 +126,19 @@ body {
 		font-size: 12px;
 		padding: 4px 10px;
 		color: var(--text);
-		background: #f5f5f5;
-		border: 1px solid #b0b0b0;
+		background: var(--button-bg-1);
+		border: 1px solid var(--button-border-1);
 		border-radius: 3px;
 		cursor: pointer;
 	}
 	& button:hover {
-		background: var(--bg-hover);
-		border-color: #8a8a8a;
+		background: var(--button-bg-2);
+		border-color: var(--button-border-2);
 	}
 
 	& button:active {
-		background: #dcdcdc;
+		background: var(--button-bg-3);
+		border-color: var(--button-border-2);
 	}
 
 	& table {
@@ -100,7 +153,7 @@ body {
 		border-bottom: 1px solid var(--border);
 		font-size: 10px;
 		text-transform: uppercase;
-		color: var(--text-dim);
+		color: var(--text-table-header);
 		text-align: left;
 	}
 
@@ -148,15 +201,9 @@ body {
 
 #factBrowserTables {
 	display: grid;
-	grid-template-columns: 1fr 1fr 3fr;
+	grid-template-columns: 1fr 2fr 2fr;
 	gap: 6px;
 	align-items: start;
-}
-
-#batchInput:focus {
-	outline: none;
-	border-color: var(--accent);
-	box-shadow: 0 0 0 2px var(--accent-soft);
 }
 
 #below-batch-input {
@@ -168,6 +215,10 @@ body {
 	& input {
 		margin-right: 0px;
 	}
+
+	& label {
+		user-select: none;
+	}
 }
 
 #focusStack tbody tr,
@@ -178,15 +229,43 @@ body {
 #focusStack tbody tr:hover,
 #moduleList tbody tr:hover,
 #factList tbody tr:hover {
-	background: var(--table-selection);
+	background: var(--accent-soft);
 }
 
 .below-output-log {
 	flex: 0 0 auto;
 }
 
-.lm-Menu-item.lm-mod-toggled > .lm-Menu-itemIcon::before {
-	content: "\2713" !important;
+.lm-DockPanel-overlay {
+	background: var(--bg-translucent);
+	border-color: var(--border);
+}
+
+.lm-DockPanel-handle {
+	transition: outline 100ms ease;
+	outline: 1px solid rgba(0, 0, 0, 0.0);
+	outline-offset: -3px;
+
+	&:hover {
+		outline: 1px solid rgba(0, 0, 0, 0.3);
+	}
+}
+
+.lm-TabBar-tab {
+	border-color: var(--border);
+	background: var(--tab-dimmed-1);
+}
+
+.lm-TabBar-content {
+	border-color: var(--border);
+}
+
+.lm-TabBar-tab.lm-mod-current {
+	background: var(--bg-tab);
+}
+
+.lm-TabBar-tab:hover:not(.lm-mod-current) {
+	background: var(--tab-dimmed-2);
 }
 
 .lm-TabBar-tab.lm-mod-closable {
@@ -203,16 +282,37 @@ body {
 	}
 }
 
-.lm-DockPanel-handle {
-	transition: outline 100ms ease;
-	outline: 1px solid rgba(0, 0, 0, 0.0);
-	outline-offset: -3px;
-
-	&:hover {
-		outline: 1px solid rgba(0, 0, 0, 0.3);
-	}
+.lm-MenuBar {
+	background: var(--menubar-bg);
+	color: var(--menubar-text);
+	border-color: var(--border);
 }
 
-.lm-TabBar-tab.lm-mod-current {
+.lm-MenuBar.lm-mod-active .lm-MenuBar-item.lm-mod-active {
 	background: var(--bg-tab);
+	border-left: 1px solid var(--border);
+	border-right: 1px solid var(--border);
+}
+
+.lm-MenuBar-item.lm-mod-active {
+	background: var(--bg-hover);
+}
+
+.lm-Menu {
+	background: var(--bg-tab);
+	color: var(--text);
+	font-family: var(--sans-serif);
+	border-color: var(--border);
+}
+
+.lm-Menu-item.lm-mod-active {
+	background: var(--bg-hover);
+}
+
+.lm-Menu-item[data-type='separator'] > div::after {
+	border-top: 1px solid var(--border);
+}
+
+.lm-Menu-item.lm-mod-toggled > .lm-Menu-itemIcon::before {
+	content: "\2713" !important;
 }
