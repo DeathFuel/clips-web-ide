@@ -31,8 +31,14 @@
 	--button-border-1: #aaa;
 	--button-border-2: #888;
 
+	--handle-off: #0000;
+	--handle-on: #0004;
+
 	--menubar-bg: #fafafa;
 	--menubar-text: rgba(0, 0, 0, 0.87);
+
+	--cm-gutter-bg: #f5f5f5;
+	--cm-activeline-bg: #cef4;
 }
 
 .dark {
@@ -63,8 +69,14 @@
 	--button-border-1: #444;
 	--button-border-2: #666;
 
+	--handle-off: #fff0;
+	--handle-on: #fff4;
+
 	--menubar-bg: #111;
 	--menubar-text: rgba(255, 255, 255, 0.87);
+
+	--cm-gutter-bg: #0a0a0a;
+	--cm-activeline-bg: #0482;
 }
 
 html, body {
@@ -117,6 +129,38 @@ body {
 			outline: none;
 			border-color: var(--accent);
 			box-shadow: 0 0 0 2px var(--accent-soft);
+		}
+	}
+
+	& .cm-editor {
+		flex: 1 1 0;
+		overflow: auto;
+		border: 1px solid var(--border);
+		border-radius: 3px;
+		scrollbar-color: var(--scrollbar) transparent;
+
+		&.cm-focused {
+			border-color: var(--accent);
+			box-shadow: 0 0 0 2px var(--accent-soft);
+			outline: none;
+		}
+
+		& .cm-line {
+			font-size: 12px;
+			font-family: var(--mono);
+		}
+
+		& .cm-gutters {
+			background-color: var(--cm-gutter-bg);
+			border-color: var(--border);
+		}
+
+		& .cm-activeLineGutter {
+			background-color: var(--cm-activeline-bg);
+		}
+
+		& .cm-activeLine {
+			background-color: var(--cm-activeline-bg);
 		}
 	}
 
@@ -206,7 +250,7 @@ body {
 	align-items: start;
 }
 
-#below-batch-input {
+#belowBatchInput {
 	flex: 0 0 auto;
 	display: flex;
 	align-items: center;
@@ -232,7 +276,7 @@ body {
 	background: var(--accent-soft);
 }
 
-.below-output-log {
+.belowOutputLog {
 	flex: 0 0 auto;
 }
 
@@ -243,11 +287,11 @@ body {
 
 .lm-DockPanel-handle {
 	transition: outline 100ms ease;
-	outline: 1px solid rgba(0, 0, 0, 0.0);
+	outline: 1px solid var(--handle-off);
 	outline-offset: -3px;
 
 	&:hover {
-		outline: 1px solid rgba(0, 0, 0, 0.3);
+		outline: 1px solid var(--handle-on);
 	}
 }
 
