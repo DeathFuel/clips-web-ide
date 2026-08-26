@@ -19,6 +19,7 @@
   "dependencies": {
     "@lumino/default-theme": "^2.1.16",
     "@lumino/widgets": "^2.9.0",
-    "@types/emscripten": "^1.41.5"
+    "@types/emscripten": "^1.41.5",
+    "codemirror": "^6.0.2"
   }
 }
