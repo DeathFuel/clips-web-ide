@@ -49,6 +49,18 @@ export default class BatchInput extends TabBase {
 		let sendButton = node.querySelector("#sendButton") as HTMLButtonElement;
 		let clearOnSend = node.querySelector("#clearOnSend") as HTMLInputElement;
 
+		const send = (str: string) => {
+			if (clearOnSend.checked) {
+				Module.RecreateEnvironment();
+				TabBase.getInstance(Terminal).setupOutputLog();
+			}
+			Module.LoadAndExecute(Environment, str);
+		}
+
+		sendButton.addEventListener("click", function(_) {
+			send(view.state.doc.toString())
+		});
+
 		let view = new EditorView({
 			extensions: [
 				lineNumbers(),
@@ -63,24 +75,25 @@ export default class BatchInput extends TabBase {
 				highlightActiveLineGutter(),
 				highlightSelectionMatches(),
 				keymap.of([
+					{
+						key: "Control-Shift-Enter",
+						run(target: EditorView) {
+							send(target.state.doc.toString());
+							return true;
+						}
+					},
+					{
+						key: "Tab",
+						run: insertTab
+					},
 					...closeBracketsKeymap,
 					...defaultKeymap,
-					...historyKeymap,
-					//indentWithTab
-					{ key: "Tab", run: insertTab }
+					...historyKeymap
 				]),
 			],
 		});
 		this.view = view;
 		node.insertBefore(view.dom, node.firstChild);
-
-		sendButton.addEventListener("click", function(_) {
-			if (clearOnSend.checked) {
-				Module.RecreateEnvironment();
-				TabBase.getInstance(Terminal).setupOutputLog();
-			}
-			Module.LoadAndExecute(Environment, view.state.doc.toString());
-		});
 	}
 
 	public setBatchInput(str: string) {
