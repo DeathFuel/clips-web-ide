@@ -162,6 +162,10 @@ body {
 		& .cm-activeLine {
 			background-color: var(--cm-activeline-bg);
 		}
+
+		& .cm-content {
+			caret-color: var(--text);
+		}
 	}
 
 	& button {

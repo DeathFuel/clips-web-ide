@@ -47,7 +47,8 @@ interface ExtendedModule extends MainModule {
 let Module = await makeModule({
 	"print": output,
 	"printErr": output,
-	"removeLastPrintedChar" : removeLastPrintedChar
+	"removeLastPrintedChar": removeLastPrintedChar,
+	"onRuntimeInitialized": () => { document.getElementById("loading-screen")?.remove(); }
 }) as ExtendedModule;
 let Environment = Module._CreateEnvironment();
 
