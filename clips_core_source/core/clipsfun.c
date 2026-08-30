@@ -14,7 +14,7 @@ EMSCRIPTEN_KEEPALIVE
 void FlushOutput(Environment* env) {
 	WriteString(env, STDOUT, "\n");
 	EM_ASM (
-		Module.removeLastPrintedChar();
+		Module.flushOutput();
 	);
 }
 
@@ -85,6 +85,7 @@ WatchItem StrToWatchItem(const char *str) {
 			"Could not find watch item \"" + UTF8ToString($0) + "\" (address " + $0 + ")"
 		);
 	}, str);
+	abort();
 }
 
 EMSCRIPTEN_KEEPALIVE
@@ -99,6 +100,9 @@ void SetWatchFlag(Environment* env, const char* str, bool b) {
 	SetWatchState(env, wi, b);
 }
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wint-to-pointer-cast"
+
 EMSCRIPTEN_KEEPALIVE
 const char** GetFocusStackModuleNames(Environment* env) {
 	int count = 0;
@@ -106,13 +110,29 @@ const char** GetFocusStackModuleNames(Environment* env) {
 		count++;
 	}
 	const char** names = malloc((1 + count) * sizeof(*names));
-	int i = 0;
+	names[0] = (const char*) count;
+	int i = 1;
 	for (FocalModule* focus = EngineData(env)->CurrentFocus; focus != NULL; focus = focus->next) {
 		names[i++] = DefmoduleName(focus->theModule);
 	}
-	names[count] = 0;
 	return names;
 }
+
+EMSCRIPTEN_KEEPALIVE
+const char** GetDefmoduleNames(Environment* env) {
+	int count = 0;
+	for (Defmodule* module = GetNextDefmodule(env, NULL); module != NULL; module = GetNextDefmodule(env, module)) {
+		count++;
+	}
+	const char** names = malloc((1 + count) * sizeof(*names));
+	names[0] = (const char*) count;
+	int i = 1;
+	for (Defmodule* module = GetNextDefmodule(env, NULL); module != NULL; module = GetNextDefmodule(env, module)) {
+		names[i++] = DefmoduleName(module);
+	}
+	return names;
+}
+#pragma clang diagnostic pop
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wpointer-to-int-cast"
@@ -130,46 +150,27 @@ int32_t* GetModuleAgenda(Environment* env, const char* moduleName) {
 		count++;
 	}
 
-	// Memory layout: salience, rule name pointer, basis string pointer
-	// Terminates with a phony salience value of 0x7FFFFFFF because said values range from -10k to 10k by default
-	// Awful, but it works because pointers are guaranteed to be 32-bit here.
+	// Memory layout: salience, rule name pointer, basis string pointer (freed)
 	int32_t* data = malloc((1 + 3 * count) * sizeof(*data));
+	data[0] = count;
 
 	int i = 0;
+	StringBuilder* sb = CreateStringBuilder(env, 16);
+	OpenStringBuilderDestination(env, "tmp", sb);
 	for (Activation* act = moduleItem->agenda; act != NULL; act = GetNextActivation(env, act)) {
-		StringBuilder* sb = CreateStringBuilder(env, 16);
-		OpenStringBuilderDestination(env, "tmp", sb);
 		PrintPartialMatch(env, "tmp", act->basis);
-		CloseStringBuilderDestination(env, "tmp");
-		data[0 + 3 * i] = act->salience;
-		data[1 + 3 * i] = (int32_t) act->theRule->header.name->contents;
-		data[2 + 3 * i] = (int32_t) SBCopy(sb);
-		SBDispose(sb);
+		data[1 + 3 * i] = act->salience;
+		data[2 + 3 * i] = (int32_t) act->theRule->header.name->contents;
+		data[3 + 3 * i] = (int32_t) SBCopy(sb);
+		SBReset(sb);
 		i++;
 	}
+	CloseStringBuilderDestination(env, "tmp");
+	SBDispose(sb);
 
-	data[3 * count] = 0x7FFFFFFF;
 	return data;
 }
-#pragma clang diagnostic pop
 
-EMSCRIPTEN_KEEPALIVE
-const char** GetDefmoduleNames(Environment* env) {
-	int count = 0;
-	for (Defmodule* module = GetNextDefmodule(env, NULL); module != NULL; module = GetNextDefmodule(env, module)) {
-		count++;
-	}
-	const char** names = malloc((1 + count) * sizeof(*names));
-	int i = 0;
-	for (Defmodule* module = GetNextDefmodule(env, NULL); module != NULL; module = GetNextDefmodule(env, module)) {
-		names[i++] = DefmoduleName(module);
-	}
-	names[count] = 0;
-	return names;
-}
-
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wpointer-to-int-cast"
 EMSCRIPTEN_KEEPALIVE
 int32_t* GetModuleFacts(Environment* env, const char* moduleName) {
 	Defmodule* module = FindDefmodule(env, moduleName);
@@ -182,26 +183,34 @@ int32_t* GetModuleFacts(Environment* env, const char* moduleName) {
 		count++;
 	}
 
-	// Memory layout: fact index, template string pointer, slot string array pointer (zero if slots are implied), value string array pointer (zero if there are no values)
-	// Ends with fake fact index -1
+	// Memory layout:
+	// - fact index
+	// - template string pointer
+	// - null-terminated slot string array pointer (zero if slots are implied; freed, contents NOT freed)
+	// - null-terminated value string array pointer (zero if there are no values; freed, all contents freed)
 	int32_t* data = malloc((1 + 4 * count) * sizeof(*data));
+	data[0] = count;
+
 	int i = 0;
 	for (Fact* fact = GetNextFactInScope(env, NULL); fact != NULL; fact = GetNextFactInScope(env, fact)) {
-		const char** slotNames = 0;
-		char** values = 0;
+		const char** slotNames;
+		char** values;
 
-		// TODO clean up this garbage or find a better way to do this
-		if (fact->whichDeftemplate->implied) { // ordered fact
+		if (fact->whichDeftemplate->implied) { // ordered fact; mark slotNames as empty with a null ptr
 			Multifield *multifield = fact->theProposition.contents[0].multifieldValue;
+			slotNames = 0;
 			values = malloc((1 + multifield->length) * sizeof(*values));
+
+			StringBuilder* sb = CreateStringBuilder(env, 16);
+			OpenStringBuilderDestination(env, "tmp", sb);
 			for (int j = 0; j < multifield->length; j++) {
-				StringBuilder* sb = CreateStringBuilder(env, 16);
-				OpenStringBuilderDestination(env, "tmp", sb);
 				PrintAtom(env, "tmp", multifield->contents[j].header->type, multifield->contents[j].value);
-				CloseStringBuilderDestination(env, "tmp");
 				values[j] = SBCopy(sb);
-				SBDispose(sb);
+				SBReset(sb);
 			}
+			CloseStringBuilderDestination(env, "tmp");
+			SBDispose(sb);
+
 			values[multifield->length] = 0;
 		} else { // deftemplate fact
 			int slotCount = 0;
@@ -210,13 +219,15 @@ int32_t* GetModuleFacts(Environment* env, const char* moduleName) {
 			}
 			slotNames = malloc(slotCount * sizeof(*values));
 			values = malloc((1 + slotCount) * sizeof(*values));
+
 			int j = 0;
+			StringBuilder* sb = CreateStringBuilder(env, 16);
+			OpenStringBuilderDestination(env, "tmp", sb);
 			for (struct templateSlot *slot = fact->whichDeftemplate->slotList; slot != NULL; slot = slot->next) {
 				slotNames[j] = slot->slotName->contents;
 				CLIPSValue cv;
 				GetFactSlot(fact, slot->slotName->contents, &cv);
-				StringBuilder* sb = CreateStringBuilder(env, 16);
-				OpenStringBuilderDestination(env, "tmp", sb);
+
 				if (slot->multislot == false) {
 					PrintAtom(env, "tmp", ((TypeHeader *) cv.value)->type, cv.value);
 				} else {
@@ -225,23 +236,24 @@ int32_t* GetModuleFacts(Environment* env, const char* moduleName) {
 						PrintMultifieldDriver(env, "tmp", segment, 0, segment->length, false);
 					}
 				}
-				CloseStringBuilderDestination(env, "tmp");
 				values[j] = SBCopy(sb);
-				SBDispose(sb);
+				SBReset(sb);
 				j++;
 			}
+			CloseStringBuilderDestination(env, "tmp");
+			SBDispose(sb);
+
 			values[slotCount] = 0;
 		}
 
-		data[0 + 4 * i] = fact->factIndex;
-		data[1 + 4 * i] = (int32_t) fact->whichDeftemplate->header.name->contents;
-		data[2 + 4 * i] = (int32_t) slotNames;
-		data[3 + 4 * i] = (int32_t) values;
+		data[1 + 4 * i] = fact->factIndex;
+		data[2 + 4 * i] = (int32_t) fact->whichDeftemplate->header.name->contents;
+		data[3 + 4 * i] = (int32_t) slotNames;
+		data[4 + 4 * i] = (int32_t) values;
 		i++;
 	}
 
 	RestoreCurrentModule(env);
-	data[4 * count] = -1;
 	return data;
 }
 #pragma clang diagnostic pop

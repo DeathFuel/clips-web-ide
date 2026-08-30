@@ -273,11 +273,15 @@ body {
 #moduleList tbody tr,
 #factList tbody tr {
 	cursor: pointer;
+	user-select: none;
 }
 #focusStack tbody tr:hover,
 #moduleList tbody tr:hover,
 #factList tbody tr:hover {
 	background: var(--accent-soft);
+	&:active {
+		background: var(--bg-hover);
+	}
 }
 
 .belowOutputLog {

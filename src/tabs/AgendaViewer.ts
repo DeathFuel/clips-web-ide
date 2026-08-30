@@ -2,6 +2,7 @@ import TabBase from "./TabBase.ts";
 import htmlSrc from "./AgendaViewer.html?raw"
 
 import { Module, Environment } from "../logic.ts";
+import { getAgendaData, getFocusStackNames } from "../data.ts";
 
 export default class AgendaViewer extends TabBase {
 
@@ -11,14 +12,14 @@ export default class AgendaViewer extends TabBase {
 	private selectedModule: string = "MAIN";
 
 	constructor() {
-		let node = document.createElement("div");
+		const node = document.createElement("div");
 		node.innerHTML = htmlSrc;
 
 		super({node: node});
 
 		this.title.label = "Agenda Viewer";
 
-		let clickable = (sel: string, fn: (e: PointerEvent) => void) => {
+		const clickable = (sel: string, fn: (e: PointerEvent) => void) => {
 			(node.querySelector(sel) as HTMLButtonElement).addEventListener("click", fn);
 		}
 
@@ -31,26 +32,15 @@ export default class AgendaViewer extends TabBase {
 	}
 
 	protected override onBrowserUpdate() {
-		let focusStackNames: Array<string> = [];
-
-		let arrayPtr = Module._GetFocusStackModuleNames(Environment);
-		let originalPtr = arrayPtr;
-		let strPtr = 0;
-		while (true) {
-			strPtr = Module.getValue(arrayPtr, "i32");
-			if (!strPtr) { break; }
-			arrayPtr += 4;
-			focusStackNames.push(Module.UTF8ToString(strPtr));
-		}
-		Module._free(originalPtr);
+		const focusStackNames = getFocusStackNames();
 
 		this.focusStack.querySelectorAll("tbody").forEach((e: HTMLTableSectionElement) => e.remove());
 		this.agenda.querySelectorAll("tbody").forEach((e: HTMLTableSectionElement) => e.remove());
-		let tbody = this.focusStack.createTBody();
+		const tbody = this.focusStack.createTBody();
 
 		for (const moduleName of focusStackNames) {
-			let row = tbody.insertRow(-1);
-			let module = document.createElement("td");
+			const row = tbody.insertRow(-1);
+			const module = document.createElement("td");
 			module.textContent = moduleName;
 			row.append(module);
 
@@ -66,39 +56,17 @@ export default class AgendaViewer extends TabBase {
 	}
 
 	private showModuleAgenda(moduleName: string) {
-		let agendaData: Array<{ salience: number, rule: string, basis: string }> = [];
-
-		let dataPtr = Module.GetModuleAgenda(Environment, moduleName);
-		let originalPtr = dataPtr;
-		while (true) {
-			let salience = Module.getValue(dataPtr, "i32");
-			if (salience == 0x7FFFFFFF) { break; }
-			dataPtr += 4;
-
-			let rulePtr = Module.getValue(dataPtr, "i32");
-			dataPtr += 4;
-
-			let basisPtr = Module.getValue(dataPtr, "i32");
-			dataPtr += 4;
-
-			agendaData.push({
-				salience: salience,
-				rule: Module.UTF8ToString(rulePtr),
-				basis: Module.UTF8ToString(basisPtr)
-			});
-			Module._free(basisPtr);
-		}
-		Module._free(originalPtr);
+		const agendaData = getAgendaData(moduleName);
 
 		this.agenda.querySelectorAll("tbody").forEach((e: HTMLTableSectionElement) => e.remove());
-		let tbody = this.agenda.createTBody();
+		const tbody = this.agenda.createTBody();
 
 		for (const agendaElem of agendaData) {
-			let row = tbody.insertRow(-1);
+			const row = tbody.insertRow(-1);
 
-			let salience = document.createElement("td");
-			let rule = document.createElement("td");
-			let basis = document.createElement("td");
+			const salience = document.createElement("td");
+			const rule = document.createElement("td");
+			const basis = document.createElement("td");
 
 			salience.textContent = agendaElem.salience.toString();
 			rule.textContent = agendaElem.rule;

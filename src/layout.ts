@@ -16,15 +16,15 @@ import { CLIPSWatchItems, Environment, Module } from "./logic.ts";
 
 const commands = new CommandRegistry();
 
-let themeMenu = new Menu({ commands });
+const themeMenu = new Menu({ commands });
 themeMenu.title.label = "Theme";
-let tabMenu = new Menu({ commands });
+const tabMenu = new Menu({ commands });
 tabMenu.title.label = "Tabs";
-let watchMenu = new Menu({ commands });
+const watchMenu = new Menu({ commands });
 watchMenu.title.label = "Watch";
-let exampleMenu = new Menu({ commands });
+const exampleMenu = new Menu({ commands });
 exampleMenu.title.label = "Examples";
-let helpMenu = new Menu({ commands });
+const helpMenu = new Menu({ commands });
 helpMenu.title.label = "Help";
 
 // theme menu
@@ -44,10 +44,10 @@ themeMenu.addItem({ command: "theme:dark" });
 
 // tabs & tab menu
 
-let term = new Terminal();
-let batch = new BatchInput();
-let agenda = new AgendaViewer();
-let facts = new FactBrowser();
+const term = new Terminal();
+const batch = new BatchInput();
+const agenda = new AgendaViewer();
+const facts = new FactBrowser();
 
 const tabs: Array<TabBase> = [
 	term,
@@ -57,10 +57,10 @@ const tabs: Array<TabBase> = [
 ];
 
 tabs.forEach((tab: TabBase) => {
-	let canBeAdded = tab.title.closable;
+	const canBeAdded = tab.title.closable;
 	if (!canBeAdded) { return; }
-	let tabName = tab.title.label;
-	let commandId = "tab:" + tabName.toLowerCase().replace(" ", "-");
+	const tabName = tab.title.label;
+	const commandId = "tab:" + tabName.toLowerCase().replace(" ", "-");
 	commands.addCommand(commandId, {
 		label: tabName,
 		execute: () => {
@@ -75,10 +75,10 @@ tabs.forEach((tab: TabBase) => {
 // watch menu
 
 CLIPSWatchItems.forEach((str: string) => {
-	let commandId = "watch:" + str.toLowerCase().replace(" ", "-");
-	let enumName = str.toUpperCase().replace(" ", "_");
-	let setter = () => { Module.SetWatchFlag(Environment, enumName, !getter()); }
-	let getter = () => { return Module.GetWatchFlag(Environment, enumName); }
+	const commandId = "watch:" + str.toLowerCase().replace(" ", "-");
+	const enumName = str.toUpperCase().replace(" ", "_");
+	const setter = () => { Module.SetWatchFlag(Environment, enumName, !getter()); }
+	const getter = () => { return Module.GetWatchFlag(Environment, enumName); }
 	commands.addCommand(commandId, {
 		label: str,
 		execute: setter,
@@ -105,7 +105,7 @@ watchMenu.addItem({ command: "watch:none" });
 	[ "Collatz", exampleCollatz ],
 	[ "Sorting", exampleSorting ]
 ] as [string, string][]).forEach(([name, str]: [string, string]) => {
-	let commandId = "example:" + name.toLowerCase().replace(" ", "-");
+	const commandId = "example:" + name.toLowerCase().replace(" ", "-");
 	commands.addCommand(commandId, {
 		label: name,
 		execute: () => {
@@ -135,7 +135,7 @@ helpMenu.addItem({ command: "help:source" });
 
 // widgets
 
-let bar = new MenuBar();
+const bar = new MenuBar();
 bar.addMenu(themeMenu);
 bar.addMenu(tabMenu);
 bar.addMenu(watchMenu);
@@ -143,14 +143,14 @@ bar.addMenu(exampleMenu);
 bar.addMenu(helpMenu);
 bar.id = "menuBar";
 
-let dock = new DockPanel();
+const dock = new DockPanel();
 dock.addWidget(term);
 dock.addWidget(batch, { mode: "split-left", ref: term });
 dock.addWidget(agenda, { mode: "split-bottom", ref: batch });
 dock.addWidget(facts, { mode: "split-bottom", ref: term });
 dock.id = "dock";
 
-let main = new BoxPanel({ direction: "left-to-right", spacing: 0 });
+const main = new BoxPanel({ direction: "left-to-right", spacing: 0 });
 main.id = "main";
 main.addWidget(dock);
 
