@@ -9,32 +9,29 @@ export const CLIPSWatchItems = [
 	"Methods", "Rules", "Slots", "Statistics"
 ];
 
-var outputLog: HTMLTextAreaElement;
+const loadingScreen = document.getElementById("loading-screen");
+
+let outputLog: HTMLTextAreaElement;
+let outputBuffer = "";
 
 function output(text: string) {
+	outputBuffer = outputBuffer + text + "\n";
+}
+
+function flushOutput() {
+	outputBuffer = outputBuffer.slice(0, -1);
 	if (!outputLog) {
 		outputLog = document.getElementById("outputLog") as HTMLTextAreaElement;
 	}
-
 	if (outputLog) {
-		outputLog.value = outputLog.value + text + "\n";
+		outputLog.value = outputBuffer;
 		outputLog.scrollTop = outputLog.scrollHeight;
-	} else  {
-		console.log(text);
+	} else {
+		console.error("Output flushed with output log missing! Message:\n" + outputBuffer);
 	}
 }
 
-function removeLastPrintedChar() {
-	if (!outputLog) {
-		outputLog = document.getElementById("outputLog") as HTMLTextAreaElement;
-	}
-	if (outputLog) {
-		outputLog.value = outputLog.value.slice(0, -1);
-	}
-}
-
-// Wrap or compose some Module functions that require extra processing, have side effects, or take string arguments. Other Module functions are called directly.
-// TODO refactor this file and consider stuffing everything into one ClipsSession object
+// Wrap or compose some Module functions that require extra processing, have side effects, or take string arguments. Other exported functions are called directly.
 interface ExtendedModule extends MainModule {
 	RecreateEnvironment(): void;
 	LoadAndExecute(env: number, str: string): void;
@@ -44,28 +41,37 @@ interface ExtendedModule extends MainModule {
 	GetWatchFlag(env: number, str: string): boolean;
 };
 
-let Module = await makeModule({
-	"print": output,
-	"printErr": output,
-	"removeLastPrintedChar": removeLastPrintedChar,
-	"onRuntimeInitialized": () => { document.getElementById("loading-screen")?.remove(); }
-}) as ExtendedModule;
+let Module: ExtendedModule;
+try {
+	Module = await makeModule({
+		"print": output,
+		"printErr": output,
+		"flushOutput": flushOutput,
+		"onRuntimeInitialized": () => { loadingScreen?.remove(); }
+	}) as ExtendedModule;
+} catch (e: any) {
+	if (loadingScreen) {
+		loadingScreen.textContent = e.toString();
+	}
+	throw e;
+}
 let Environment = Module._CreateEnvironment();
 
-// Keeps only the user's watch states for convenience
+// Keep only the user's watch states for convenience
 Module.RecreateEnvironment = () => {
-	let watchStates: boolean[] = [];
+	const watchStates: boolean[] = [];
 	CLIPSWatchItems.forEach((str: string) => {
-		let enumName = str.toUpperCase().replace(" ", "_");
+		const enumName = str.toUpperCase().replace(" ", "_");
 		watchStates.push(Module.GetWatchFlag(Environment, enumName));
 	});
 
 	Module._DestroyEnvironment(Environment);
 	Environment = Module._CreateEnvironment();
+	outputBuffer = "";
 
 	for (let i = 0; i < CLIPSWatchItems.length; i++) {
 		const str = CLIPSWatchItems[i];
-		let enumName = str.toUpperCase().replace(" ", "_");
+		const enumName = str.toUpperCase().replace(" ", "_");
 		Module.SetWatchFlag(Environment, enumName, watchStates[i]);
 	}
 };

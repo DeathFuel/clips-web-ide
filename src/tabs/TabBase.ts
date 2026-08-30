@@ -7,7 +7,7 @@ export default abstract class TabBase extends Widget {
 	constructor(options: Widget.IOptions) {
 		super(options);
 
-		let ct = new.target as Function;
+		const ct = new.target as Function;
 		if (TabBase.concreteInstances.has(ct)) {
 			throw new Error(ct.name + " constructed twice!");
 		}

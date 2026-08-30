@@ -39,15 +39,15 @@ export default class BatchInput extends TabBase {
 	private view: EditorView;
 
 	constructor() {
-		let node = document.createElement("div");
+		const node = document.createElement("div");
 		node.innerHTML = htmlSrc;
 
 		super({node: node});
 
 		this.title.label = "Batch Input";
 
-		let sendButton = node.querySelector("#sendButton") as HTMLButtonElement;
-		let clearOnSend = node.querySelector("#clearOnSend") as HTMLInputElement;
+		const sendButton = node.querySelector("#sendButton") as HTMLButtonElement;
+		const clearOnSend = node.querySelector("#clearOnSend") as HTMLInputElement;
 
 		const send = (str: string) => {
 			if (clearOnSend.checked) {
@@ -57,11 +57,11 @@ export default class BatchInput extends TabBase {
 			Module.LoadAndExecute(Environment, str);
 		}
 
-		sendButton.addEventListener("click", function(_) {
+		sendButton.addEventListener("click", (_) => {
 			send(view.state.doc.toString())
 		});
 
-		let view = new EditorView({
+		const view = new EditorView({
 			extensions: [
 				lineNumbers(),
 				highlightSpecialChars(),

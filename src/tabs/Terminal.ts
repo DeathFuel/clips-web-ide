@@ -9,16 +9,16 @@ export default class Terminal extends TabBase {
 	private outputLog: HTMLTextAreaElement;
 
 	private afterConsoleInput() {
-		let input = this.inputConsole;
+		const input = this.inputConsole;
 		input.value = input.value.replaceAll("\n", "");
 		input.style.height = "";
-		let computed = getComputedStyle(input);
-		let borders = parseFloat(computed.borderTopWidth) + parseFloat(computed.borderBottomWidth);
+		const computed = getComputedStyle(input);
+		const borders = parseFloat(computed.borderTopWidth) + parseFloat(computed.borderBottomWidth);
 		input.style.height = input.scrollHeight + borders + "px";
 	}
 
 	private consoleEnter() {
-		let input = this.inputConsole;
+		const input = this.inputConsole;
 		Module.LoadAndExecute(Environment, input.value);
 		input.value = "";
 	}
@@ -29,7 +29,7 @@ export default class Terminal extends TabBase {
 	}
 
 	constructor() {
-		let node = document.createElement("div");
+		const node = document.createElement("div");
 		node.innerHTML = htmlSrc;
 
 		super({node: node});
