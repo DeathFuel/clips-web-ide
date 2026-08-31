@@ -1,10 +1,12 @@
 import { CommandRegistry } from "@lumino/commands";
 import { MessageLoop } from "@lumino/messaging";
-import { BoxPanel, DockPanel, Menu, MenuBar, Widget } from "@lumino/widgets";
+import { BoxPanel, DockLayout, DockPanel, Menu, MenuBar, Widget } from "@lumino/widgets";
 
 import AgendaViewer from "./tabs/AgendaViewer.ts";
 import BatchInput from "./tabs/BatchInput.ts"
+import ConstructInspector from "./tabs/ConstructInspector.ts";
 import FactBrowser from "./tabs/FactBrowser.ts";
+import InstanceBrowser from "./tabs/InstanceBrowser.ts";
 import Terminal from "./tabs/Terminal.ts"
 import TabBase from "./tabs/TabBase.ts";
 
@@ -46,14 +48,14 @@ themeMenu.addItem({ command: "theme:dark" });
 
 const term = new Terminal();
 const batch = new BatchInput();
-const agenda = new AgendaViewer();
-const facts = new FactBrowser();
 
 const tabs: Array<TabBase> = [
 	term,
 	batch,
-	agenda,
-	facts
+	new AgendaViewer(),
+	new FactBrowser(),
+	new InstanceBrowser(),
+	new ConstructInspector(),
 ];
 
 tabs.forEach((tab: TabBase) => {
@@ -87,7 +89,7 @@ CLIPSWatchItems.forEach((str: string) => {
 	watchMenu.addItem({ command: commandId });
 });
 
-watchMenu.addItem({ type: 'separator' });
+watchMenu.addItem({ type: "separator" });
 
 commands.addCommand("watch:all", {
 	label: "All", execute: () => { Module.SetWatchFlag(Environment, "ALL", true); }
@@ -133,7 +135,101 @@ commands.addCommand("help:source", {
 });
 helpMenu.addItem({ command: "help:source" });
 
-// widgets
+// widget layout serialization, deserialization, saving, defaults...
+
+const defaultLayout = {
+    "type": "split-area",
+    "orientation": "horizontal",
+    "sizes": [ 0.25, 0.375, 0.375 ],
+    "children": [
+        {
+            "type": "split-area",
+            "orientation": "vertical",
+            "sizes": [ 0.25, 0.25, 0.25, 0.25 ],
+            "children": [
+                { "type": "tab-area", "currentIndex": 0, "widgets": [ "AgendaViewer" ] },
+                { "type": "tab-area", "currentIndex": 0, "widgets": [ "FactBrowser" ] },
+                { "type": "tab-area", "currentIndex": 0, "widgets": [ "InstanceBrowser" ] },
+                { "type": "tab-area", "currentIndex": 0, "widgets": [ "ConstructInspector" ] }
+            ]
+        },
+        { "type": "tab-area", "currentIndex": 0, "widgets": [ "BatchInput" ] },
+        { "type": "tab-area", "currentIndex": 0, "widgets": [ "Terminal" ] }
+    ]
+}
+
+function mapLayoutIDs(area: DockLayout.AreaConfig | null): any {
+	if (!area) return null;
+	if (area.type === "tab-area") {
+		return {
+			type: "tab-area",
+			currentIndex: area.currentIndex,
+			widgets: area.widgets.map((w: Widget) => w.id)
+		};
+	}
+	return {
+		type: "split-area",
+		orientation: area.orientation,
+		sizes: area.sizes,
+		children: area.children.map(mapLayoutIDs)
+	};
+}
+
+const idToTab: Map<string, TabBase> = new Map();
+tabs.forEach((t: TabBase) => { idToTab.set(t.id, t); });
+
+function unmapLayoutIDs(area: any): DockLayout.AreaConfig | null {
+	if (!area) return null;
+	if (area.type === "tab-area") {
+		return {
+			type: "tab-area",
+			currentIndex: area.currentIndex,
+			widgets: area.widgets.map((id: string) => idToTab.get(id))
+		};
+	}
+	return {
+		type: "split-area",
+		orientation: area.orientation,
+		sizes: area.sizes,
+		children: area.children ? area.children.map(unmapLayoutIDs) : []
+	};
+}
+
+// main dockpanel, continued layout logic
+
+const dock = new DockPanel();
+dock.addWidget(term);
+dock.id = "dock";
+
+const savedLayout = localStorage.getItem("savedLayout");
+const parsedLayout = savedLayout ? JSON.parse(savedLayout) : null;
+if (parsedLayout) {
+	try {
+		dock.restoreLayout({ main: unmapLayoutIDs(parsedLayout) });
+	} catch {
+		dock.restoreLayout({ main: unmapLayoutIDs(defaultLayout) });
+	}
+} else {
+	dock.restoreLayout({ main: unmapLayoutIDs(defaultLayout) });
+}
+
+dock.layoutModified.connect(() => {
+	localStorage.setItem(
+		"savedLayout",
+		JSON.stringify(mapLayoutIDs(dock.saveLayout().main))
+	);
+});
+
+tabMenu.addItem({ type: "separator" });
+commands.addCommand("tab:reset-layout", {
+	label: "Reset layout",
+	execute: () => {
+		dock.restoreLayout({ main: unmapLayoutIDs(defaultLayout) });
+	}
+});
+tabMenu.addItem({ command: "tab:reset-layout" });
+
+// menubar and everything else
 
 const bar = new MenuBar();
 bar.addMenu(themeMenu);
@@ -142,13 +238,6 @@ bar.addMenu(watchMenu);
 bar.addMenu(exampleMenu);
 bar.addMenu(helpMenu);
 bar.id = "menuBar";
-
-const dock = new DockPanel();
-dock.addWidget(term);
-dock.addWidget(batch, { mode: "split-left", ref: term });
-dock.addWidget(agenda, { mode: "split-bottom", ref: batch });
-dock.addWidget(facts, { mode: "split-bottom", ref: term });
-dock.id = "dock";
 
 const main = new BoxPanel({ direction: "left-to-right", spacing: 0 });
 main.id = "main";

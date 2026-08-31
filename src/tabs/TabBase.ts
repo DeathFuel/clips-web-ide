@@ -15,6 +15,7 @@ export default abstract class TabBase extends Widget {
 
 		this.addClass("content-tab");
 		this.title.closable = true;
+		this.id = ct.name;
 	}
 
 	public static getInstance<T extends new (...args: any[]) => TabBase>(ct: T): InstanceType<T> {

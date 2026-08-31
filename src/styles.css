@@ -254,6 +254,13 @@ body {
 	align-items: start;
 }
 
+#instanceBrowserTables {
+	display: grid;
+	grid-template-columns: 1fr 2fr 2fr;
+	gap: 6px;
+	align-items: start;
+}
+
 #belowBatchInput {
 	flex: 0 0 auto;
 	display: flex;
@@ -270,14 +277,18 @@ body {
 }
 
 #focusStack tbody tr,
-#moduleList tbody tr,
-#factList tbody tr {
+#factModuleList tbody tr,
+#factList tbody tr,
+#instanceModuleList tbody tr,
+#instanceList tbody tr {
 	cursor: pointer;
 	user-select: none;
 }
 #focusStack tbody tr:hover,
-#moduleList tbody tr:hover,
-#factList tbody tr:hover {
+#factModuleList tbody tr:hover,
+#factList tbody tr:hover,
+#instanceModuleList tbody tr:hover,
+#instanceList tbody tr:hover {
 	background: var(--accent-soft);
 	&:active {
 		background: var(--bg-hover);
@@ -306,6 +317,7 @@ body {
 .lm-TabBar-tab {
 	border-color: var(--border);
 	background: var(--tab-dimmed-1);
+	min-width: 144px;
 }
 
 .lm-TabBar-content {

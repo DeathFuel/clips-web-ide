@@ -1,5 +1,6 @@
 import TabBase from "./TabBase.ts";
 import htmlSrc from "./FactBrowser.html?raw"
+import ConstructInspector from "./ConstructInspector.ts";
 
 import { getModuleFacts, getModuleNames } from "../data.ts";
 import type { FactData } from "../types.ts";
@@ -22,9 +23,9 @@ export default class FactBrowser extends TabBase {
 
 		this.title.label = "Fact Browser";
 
-		this.moduleList = node.querySelector("#moduleList") as HTMLTableElement;
+		this.moduleList = node.querySelector("#factModuleList") as HTMLTableElement;
 		this.factList = node.querySelector("#factList") as HTMLTableElement;
-		this.valueList = node.querySelector("#valueList") as HTMLTableElement;
+		this.valueList = node.querySelector("#factValueList") as HTMLTableElement;
 	}
 
 	protected override onBrowserUpdate() {
@@ -77,6 +78,7 @@ export default class FactBrowser extends TabBase {
 				this.lastSelectedFactIndex = fact.index;
 				this.lastSelectedFactPosition = i;
 				this.showFact(fact.data);
+				TabBase.getInstance(ConstructInspector).showDeftemplate(moduleName, fact.template);
 			});
 
 		}
