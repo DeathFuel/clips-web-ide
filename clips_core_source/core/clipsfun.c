@@ -8,7 +8,7 @@
 #define EM_ASM(...)
 #endif
 
-_Static_assert(sizeof(void*) == 4, "wasm32 only (we assume 4-byte pointers elsewhere)");
+_Static_assert(sizeof(void*) == 4, "wasm32 only (we assume 4-byte pointers)");
 
 EMSCRIPTEN_KEEPALIVE
 void FlushOutput(Environment* env) {
@@ -192,6 +192,8 @@ int32_t* GetModuleFacts(Environment* env, const char* moduleName) {
 	data[0] = count;
 
 	int i = 0;
+	StringBuilder* sb = CreateStringBuilder(env, 16);
+	OpenStringBuilderDestination(env, "tmp", sb);
 	for (Fact* fact = GetNextFactInScope(env, NULL); fact != NULL; fact = GetNextFactInScope(env, fact)) {
 		const char** slotNames;
 		char** values;
@@ -201,15 +203,11 @@ int32_t* GetModuleFacts(Environment* env, const char* moduleName) {
 			slotNames = 0;
 			values = malloc((1 + multifield->length) * sizeof(*values));
 
-			StringBuilder* sb = CreateStringBuilder(env, 16);
-			OpenStringBuilderDestination(env, "tmp", sb);
 			for (int j = 0; j < multifield->length; j++) {
 				PrintAtom(env, "tmp", multifield->contents[j].header->type, multifield->contents[j].value);
 				values[j] = SBCopy(sb);
 				SBReset(sb);
 			}
-			CloseStringBuilderDestination(env, "tmp");
-			SBDispose(sb);
 
 			values[multifield->length] = 0;
 		} else { // deftemplate fact
@@ -221,8 +219,6 @@ int32_t* GetModuleFacts(Environment* env, const char* moduleName) {
 			values = malloc((1 + slotCount) * sizeof(*values));
 
 			int j = 0;
-			StringBuilder* sb = CreateStringBuilder(env, 16);
-			OpenStringBuilderDestination(env, "tmp", sb);
 			for (struct templateSlot *slot = fact->whichDeftemplate->slotList; slot != NULL; slot = slot->next) {
 				slotNames[j] = slot->slotName->contents;
 				CLIPSValue cv;
@@ -232,16 +228,12 @@ int32_t* GetModuleFacts(Environment* env, const char* moduleName) {
 					PrintAtom(env, "tmp", ((TypeHeader *) cv.value)->type, cv.value);
 				} else {
 					struct multifield *segment = (Multifield *)cv.value;
-					if (segment->length > 0) {
-						PrintMultifieldDriver(env, "tmp", segment, 0, segment->length, false);
-					}
+					PrintMultifieldDriver(env, "tmp", segment, 0, segment->length, true);
 				}
 				values[j] = SBCopy(sb);
 				SBReset(sb);
 				j++;
 			}
-			CloseStringBuilderDestination(env, "tmp");
-			SBDispose(sb);
 
 			values[slotCount] = 0;
 		}
@@ -252,8 +244,122 @@ int32_t* GetModuleFacts(Environment* env, const char* moduleName) {
 		data[4 + 4 * i] = (int32_t) values;
 		i++;
 	}
+	CloseStringBuilderDestination(env, "tmp");
+	SBDispose(sb);
+
+	RestoreCurrentModule(env);
+	return data;
+}
+
+EMSCRIPTEN_KEEPALIVE
+int32_t* GetModuleInstances(Environment* env, const char* moduleName) {
+	Defmodule* module = FindDefmodule(env, moduleName);
+
+	SaveCurrentModule(env);
+	SetCurrentModule(env, module);
+
+	int count = 0;
+	for (Instance* instance = GetNextInstanceInScope(env, NULL); instance != NULL; instance = GetNextInstanceInScope(env, instance)) {
+		count++;
+	}
+
+	// Memory layout:
+	// - instance name pointer (not freed)
+	// - class name pointer (not freed)
+	// - slot string array pointer (freed, contents NOT freed)
+	// - null-terminated value string array pointer (freed, all contents freed)
+	int32_t* data = malloc((1 + 4 * count) * sizeof(*data));
+	data[0] = count;
+
+	int i = 0;
+	StringBuilder* sb = CreateStringBuilder(env, 16);
+	OpenStringBuilderDestination(env, "tmp", sb);
+	for (Instance* instance = GetNextInstanceInScope(env, NULL); instance != NULL; instance = GetNextInstanceInScope(env, instance)) {
+		Defclass* cls = InstanceClass(instance);
+
+		CLIPSValue slotNames;
+		ClassSlots(cls, &slotNames, true);
+
+		int slotCount = slotNames.multifieldValue->length;
+		const char** slotNamePtrs = malloc(slotCount * sizeof(*slotNamePtrs));
+		char** values = malloc((1 + slotCount) * sizeof(*values));
+
+		for (int j = 0; j < slotCount; j++) {
+			const char* slotName = slotNames.multifieldValue->contents[j].lexemeValue->contents;
+			slotNamePtrs[j] = slotName;
+
+			CLIPSValue slotValue;
+
+			if (DirectGetSlot(instance, slotName, &slotValue) == GSE_NO_ERROR) {
+				if (slotValue.value != NULL && ((TypeHeader *) slotValue.value)->type == MULTIFIELD_TYPE) {
+					struct multifield *segment = (Multifield *)slotValue.value;
+					PrintMultifieldDriver(env, "tmp", segment, 0, segment->length, true);
+				} else if (slotValue.value != NULL) {
+					PrintAtom(env, "tmp", ((TypeHeader *) slotValue.value)->type, slotValue.value);
+				}
+
+			}
+
+			values[j] = SBCopy(sb);
+			SBReset(sb);
+		}
+
+		values[slotCount] = 0;
+
+		data[1 + 4 * i] = (int32_t) InstanceName(instance);
+		data[2 + 4 * i] = (int32_t) DefclassName(cls);
+		data[3 + 4 * i] = (int32_t) slotNamePtrs;
+		data[4 + 4 * i] = (int32_t) values;
+		i++;
+	}
+
+	CloseStringBuilderDestination(env, "tmp");
+	SBDispose(sb);
 
 	RestoreCurrentModule(env);
 	return data;
 }
 #pragma clang diagnostic pop
+
+EMSCRIPTEN_KEEPALIVE
+const char* GetDeftemplateText(Environment* env, const char* moduleName, const char* templateName) {
+	Defmodule* module = FindDefmodule(env, moduleName);
+	if (module == NULL) { return NULL; }
+
+	SaveCurrentModule(env);
+	SetCurrentModule(env, module);
+	Deftemplate* dt = FindDeftemplate(env, templateName);
+	RestoreCurrentModule(env);
+
+	if (dt == NULL) { return NULL; }
+	return DeftemplatePPForm(dt);
+}
+
+EMSCRIPTEN_KEEPALIVE
+const char* GetDefclassText(Environment* env, const char* moduleName, const char* className) {
+	Defmodule* module = FindDefmodule(env, moduleName);
+	if (module == NULL) { return NULL; }
+
+	SaveCurrentModule(env);
+	SetCurrentModule(env, module);
+	// not using FindDefclass here because it doesn't search in imported modules per the comment in its source
+	Defclass* cls = LookupDefclassInScope(env, className);
+	RestoreCurrentModule(env);
+
+	if (cls == NULL) { return NULL; }
+	return DefclassPPForm(cls);
+}
+
+EMSCRIPTEN_KEEPALIVE
+const char* GetDefruleText(Environment* env, const char* moduleName, const char* ruleName) {
+	Defmodule* module = FindDefmodule(env, moduleName);
+	if (module == NULL) { return NULL; }
+
+	SaveCurrentModule(env);
+	SetCurrentModule(env, module);
+	Defrule* rule = FindDefrule(env, ruleName);
+	RestoreCurrentModule(env);
+
+	if (rule == NULL) { return NULL; }
+	return DefrulePPForm(rule);
+}

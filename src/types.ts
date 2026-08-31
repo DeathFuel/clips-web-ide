@@ -6,3 +6,10 @@ export type Fact = {
 	template: string,
 	data: FactData
 };
+
+export type InstanceData = Array<{ slot: string, value: string }>;
+export type Instance = {
+	name: string,
+	class: string,
+	data: InstanceData
+};

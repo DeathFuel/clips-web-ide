@@ -1,5 +1,6 @@
 import TabBase from "./TabBase.ts";
 import htmlSrc from "./AgendaViewer.html?raw"
+import ConstructInspector from "./ConstructInspector.ts";
 
 import { Module, Environment } from "../logic.ts";
 import { getAgendaData, getFocusStackNames } from "../data.ts";
@@ -75,6 +76,10 @@ export default class AgendaViewer extends TabBase {
 			row.append(salience);
 			row.append(rule);
 			row.append(basis);
+
+			row.addEventListener("click", (_) => {
+				TabBase.getInstance(ConstructInspector).showDefrule(moduleName, agendaElem.rule);
+			});
 		}
 	}
 }
