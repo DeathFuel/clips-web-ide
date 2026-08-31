@@ -28,6 +28,10 @@ export default class FactBrowser extends TabBase {
 		this.valueList = node.querySelector("#factValueList") as HTMLTableElement;
 	}
 
+	protected override getHardcodedClassName(): string {
+		return "FactBrowser";
+	}
+
 	protected override onBrowserUpdate() {
 		const moduleNames = getModuleNames();
 

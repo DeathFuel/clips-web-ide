@@ -18,6 +18,10 @@ export default class ConstructInspector extends TabBase {
 		this.textArea = node.querySelector("#constructText") as HTMLTextAreaElement;
 	}
 
+	protected override getHardcodedClassName(): string {
+		return "ConstructInspector";
+	}
+
 	public showDeftemplate(moduleName: string, templateName: string) {
 		this.textArea.value = getDeftemplateText(moduleName, templateName);
 	}

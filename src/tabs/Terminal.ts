@@ -51,7 +51,10 @@ export default class Terminal extends TabBase {
 		this.inputConsole.addEventListener("input", (_ : any) => {
 			this.afterConsoleInput();
 		});
+	}
 
+	protected override getHardcodedClassName(): string {
+		return "Terminal";
 	}
 }
 

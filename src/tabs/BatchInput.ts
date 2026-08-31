@@ -96,6 +96,10 @@ export default class BatchInput extends TabBase {
 		node.insertBefore(view.dom, node.firstChild);
 	}
 
+	protected override getHardcodedClassName(): string {
+		return "BatchInput";
+	}
+
 	public setBatchInput(str: string) {
 		this.view.dispatch({
 			changes: { from: 0, to: this.view.state.doc.length, insert: str }

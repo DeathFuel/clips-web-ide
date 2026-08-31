@@ -27,6 +27,10 @@ export default class InstanceBrowser extends TabBase {
 		this.valueList = node.querySelector("#instanceValueList") as HTMLTableElement;
 	}
 
+	protected override getHardcodedClassName(): string {
+		return "InstanceBrowser";
+	}
+
 	protected override onBrowserUpdate() {
 		const moduleNames = getModuleNames();
 

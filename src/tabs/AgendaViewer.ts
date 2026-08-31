@@ -32,6 +32,10 @@ export default class AgendaViewer extends TabBase {
 		this.agenda = node.querySelector("#agenda") as HTMLTableElement;
 	}
 
+	protected override getHardcodedClassName(): string {
+		return "AgendaViewer";
+	}
+
 	protected override onBrowserUpdate() {
 		const focusStackNames = getFocusStackNames();
 

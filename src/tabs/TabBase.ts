@@ -15,7 +15,7 @@ export default abstract class TabBase extends Widget {
 
 		this.addClass("content-tab");
 		this.title.closable = true;
-		this.id = ct.name;
+		this.id = this.getHardcodedClassName();
 	}
 
 	public static getInstance<T extends new (...args: any[]) => TabBase>(ct: T): InstanceType<T> {
@@ -35,5 +35,8 @@ export default abstract class TabBase extends Widget {
 	override dispose() {
 		throw new Error("You're not supposed to call dispose() on a TabBase!");
 	}
+
+	// Unfortunately, new.target.name gets screwed up by minification
+	protected abstract getHardcodedClassName(): string;
 }
 
