@@ -11,6 +11,7 @@ import Terminal from "./tabs/Terminal.ts"
 import TabBase from "./tabs/TabBase.ts";
 
 import exampleCollatz from "./examples/collatz.clp?raw"
+import exampleReachability from "./examples/reachability.clp?raw"
 import exampleSorting from "./examples/sort.clp?raw"
 import { CLIPSWatchItems, Environment, Module } from "./logic.ts";
 
@@ -105,7 +106,8 @@ watchMenu.addItem({ command: "watch:none" });
 
 ([
 	[ "Collatz", exampleCollatz ],
-	[ "Sorting", exampleSorting ]
+	[ "Reachability", exampleReachability ],
+	[ "Sorting", exampleSorting ],
 ] as [string, string][]).forEach(([name, str]: [string, string]) => {
 	const commandId = "example:" + name.toLowerCase().replace(" ", "-");
 	commands.addCommand(commandId, {
