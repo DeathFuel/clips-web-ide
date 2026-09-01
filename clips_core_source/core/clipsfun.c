@@ -332,6 +332,11 @@ const char* GetDeftemplateText(Environment* env, const char* moduleName, const c
 	RestoreCurrentModule(env);
 
 	if (dt == NULL) { return NULL; }
+	if (dt->implied) {
+		// deviate from the Java IDE, which would just show nothing
+		static const char* impliedDeftemplate = "[fact has implied deftemplate]";
+		return impliedDeftemplate;
+	}
 	return DeftemplatePPForm(dt);
 }
 
