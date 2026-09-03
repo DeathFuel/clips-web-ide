@@ -58,7 +58,7 @@ export default class BatchInput extends TabBase {
 		}
 
 		sendButton.addEventListener("click", (_) => {
-			send(view.state.doc.toString())
+			send(this.view.state.doc.toString())
 		});
 
 		const view = new EditorView({

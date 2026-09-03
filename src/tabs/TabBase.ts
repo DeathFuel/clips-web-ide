@@ -33,7 +33,7 @@ export default abstract class TabBase extends Widget {
 	protected onBrowserUpdate() { return; }
 
 	override dispose() {
-		throw new Error("You're not supposed to call dispose() on a TabBase!");
+		console.error("You're not supposed to call dispose() on a TabBase!");
 	}
 
 	// Unfortunately, new.target.name gets screwed up by minification

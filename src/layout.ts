@@ -35,13 +35,19 @@ helpMenu.title.label = "Help";
 const bodyClasses = document.body.classList;
 commands.addCommand("theme:light", {
 	label: "Light",
-	execute: () => { bodyClasses.remove("dark"); },
+	execute: () => {
+		bodyClasses.remove("dark");
+		localStorage.setItem("theme", "light");
+	},
 });
 themeMenu.addItem({ command: "theme:light" });
 
 commands.addCommand("theme:dark", {
 	label: "Dark",
-	execute: () => { bodyClasses.add("dark"); },
+	execute: () => {
+		bodyClasses.add("dark");
+		localStorage.setItem("theme", "dark");
+	},
 });
 themeMenu.addItem({ command: "theme:dark" });
 
@@ -63,14 +69,17 @@ tabs.forEach((tab: TabBase) => {
 	const canBeAdded = tab.title.closable;
 	if (!canBeAdded) { return; }
 	const tabName = tab.title.label;
-	const commandId = "tab:" + tabName.toLowerCase().replace(" ", "-");
+	const commandId = "tab:" + tabName.toLowerCase().replaceAll(" ", "-");
 	commands.addCommand(commandId, {
 		label: tabName,
 		execute: () => {
-			if (!tab.isAttached) {
+			if (tab.isAttached) {
+				tab.close()
+			} else {
 				dock.addWidget(tab);
 			}
-		}
+		},
+		isToggled: () => tab.isAttached
 	});
 	tabMenu.addItem({ command: commandId });
 });
@@ -78,8 +87,8 @@ tabs.forEach((tab: TabBase) => {
 // watch menu
 
 CLIPSWatchItems.forEach((str: string) => {
-	const commandId = "watch:" + str.toLowerCase().replace(" ", "-");
-	const enumName = str.toUpperCase().replace(" ", "_");
+	const commandId = "watch:" + str.toLowerCase().replaceAll(" ", "-");
+	const enumName = str.toUpperCase().replaceAll(" ", "_");
 	const setter = () => { Module.SetWatchFlag(Environment, enumName, !getter()); }
 	const getter = () => { return Module.GetWatchFlag(Environment, enumName); }
 	commands.addCommand(commandId, {
@@ -109,14 +118,14 @@ watchMenu.addItem({ command: "watch:none" });
 	[ "Reachability", exampleReachability ],
 	[ "Sorting", exampleSorting ],
 ] as [string, string][]).forEach(([name, str]: [string, string]) => {
-	const commandId = "example:" + name.toLowerCase().replace(" ", "-");
+	const commandId = "example:" + name.toLowerCase().replaceAll(" ", "-");
 	commands.addCommand(commandId, {
 		label: name,
 		execute: () => {
 			if (!batch.isAttached) {
-				// TODO make this a bit smarter
 				dock.addWidget(batch, { ref: term });
 			}
+			dock.selectWidget(batch);
 			batch.setBatchInput(str.trim());
 		}
 	});
@@ -136,6 +145,12 @@ commands.addCommand("help:source", {
 	execute: () => { window.open("https://github.com/DeathFuel/clips-web-ide/"); }
 });
 helpMenu.addItem({ command: "help:source" });
+
+commands.addCommand("help:issue", {
+	label: "Report an issue",
+	execute: () => { window.open("https://github.com/DeathFuel/clips-web-ide/issues/"); }
+});
+helpMenu.addItem({ command: "help:issue" });
 
 // widget layout serialization, deserialization, saving, defaults...
 
@@ -186,7 +201,7 @@ function unmapLayoutIDs(area: any): DockLayout.AreaConfig | null {
 		return {
 			type: "tab-area",
 			currentIndex: area.currentIndex,
-			widgets: area.widgets.map((id: string) => idToTab.get(id))
+			widgets: area.widgets.map((id: string) => idToTab.get(id)).filter((e: any) => e !== undefined)
 		};
 	}
 	return {
@@ -203,15 +218,16 @@ const dock = new DockPanel();
 dock.addWidget(term);
 dock.id = "dock";
 
-const savedLayout = localStorage.getItem("savedLayout");
-const parsedLayout = savedLayout ? JSON.parse(savedLayout) : null;
-if (parsedLayout) {
-	try {
+try {
+	const savedLayout = localStorage.getItem("savedLayout");
+	const parsedLayout = savedLayout ? JSON.parse(savedLayout) : null;
+	if (parsedLayout) {
 		dock.restoreLayout({ main: unmapLayoutIDs(parsedLayout) });
-	} catch {
+	} else {
 		dock.restoreLayout({ main: unmapLayoutIDs(defaultLayout) });
 	}
-} else {
+} catch (e: any) {
+	console.error(e);
 	dock.restoreLayout({ main: unmapLayoutIDs(defaultLayout) });
 }
 
@@ -244,6 +260,10 @@ bar.id = "menuBar";
 const main = new BoxPanel({ direction: "left-to-right", spacing: 0 });
 main.id = "main";
 main.addWidget(dock);
+
+if (localStorage.getItem("theme") === "dark") {
+	bodyClasses.add("dark");
+}
 
 window.addEventListener("resize", () => {
 	MessageLoop.postMessage(bar, new Widget.ResizeMessage(-1, -1));

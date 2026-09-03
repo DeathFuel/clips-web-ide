@@ -89,7 +89,7 @@ export default class FactBrowser extends TabBase {
 
 		let factDisplayed = false;
 		for (const fact of facts) {
-			if (fact.index == this.lastSelectedFactIndex) {
+			if (fact.index === this.lastSelectedFactIndex) {
 				this.showFact(fact.data);
 				factDisplayed = true;
 			}
@@ -97,7 +97,7 @@ export default class FactBrowser extends TabBase {
 		if (!factDisplayed) {
 			// Seems the previously displayed fact is gone. Try to show something, at least?
 			for (let i = 0; i < facts.length; i++) {
-				if (i == this.lastSelectedFactPosition) {
+				if (i === this.lastSelectedFactPosition) {
 					this.showFact(facts[i].data);
 				}
 			}
