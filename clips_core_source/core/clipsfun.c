@@ -102,7 +102,6 @@ void SetWatchFlag(Environment* env, const char* str, bool b) {
 
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wint-to-pointer-cast"
-
 EMSCRIPTEN_KEEPALIVE
 const char** GetFocusStackModuleNames(Environment* env) {
 	int count = 0;
@@ -334,8 +333,7 @@ const char* GetDeftemplateText(Environment* env, const char* moduleName, const c
 	if (dt == NULL) { return NULL; }
 	if (dt->implied) {
 		// deviate from the Java IDE, which would just show nothing
-		static const char* impliedDeftemplate = "[fact has implied deftemplate]";
-		return impliedDeftemplate;
+		return "[fact has implied deftemplate]";
 	}
 	return DeftemplatePPForm(dt);
 }
