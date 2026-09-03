@@ -1,7 +1,22 @@
 # CLIPS Web IDE
 https://deathfuel.github.io/clips-web-ide/
 
-Contains most of the features of the official IDEs, plus a few extras.
+An IDE for [CLIPS](https://clipsrules.net/) that runs in your browser.
+
+## Keyboard shortcuts
+Press:
+- Arrow Up/Arrow Down in the Terminal's input area for history.
+- Ctrl+Shift+Enter in the Batch Input to send the current program to CLIPS.
+
+## Tabs
+### Terminal
+The CLIPS console, which should work exactly like the default CLIPS REPL. Always present.
+### Batch Input
+A code editor for executing entire programs at once. Checking `Clear console...` recreates the CLIPS environment and the Terminal's output log every time you send your code to CLIPS, which can be very convenient for rapid iteration (try appending `(reset)` and `(run)` to your program like the examples do).
+### Agenda Viewer, Fact Browser, Instance Browser
+Similar in behavior to their counterparts in the official IDEs. Each of these tabs might -- depending on program state -- contain a list of modules. Clicking on a module can then present its agenda, facts, or instances.
+### Construct Inspector
+Depending on what was clicked in one of the browser tabs, this tab can show an agenda item's defrule, a fact's deftemplate, or an instance's defclass.
 
 ## Local setup
 Run
