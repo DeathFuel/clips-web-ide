@@ -1,5 +1,5 @@
 import { Module, Environment } from "./logic.ts";
-import type { AgendaEntry, Fact, FactData, Instance, InstanceData } from "./types.ts";
+import type { AgendaEntry, Fact, FactData, Global, Instance, InstanceData } from "./types.ts";
 
 // Length-prefixed array of null-terminated strings that do NOT get freed
 function readStringArray(arrayPtr: number): Array<string> {
@@ -171,6 +171,29 @@ export function getModuleInstances(moduleName: string): Array<Instance> {
 	return instances;
 }
 
+export function getModuleGlobals(moduleName: string): Array<Global> {
+	const globals: Array<Global> = [];
+
+	let dataPtr = Module.GetModuleGlobals(Environment, moduleName);
+	const originalPtr = dataPtr;
+	const count = Module.getValue(dataPtr, "i32");
+	for (let i = 0; i < count; i++) {
+		dataPtr += 4;
+		const namePtr = Module.getValue(dataPtr, "i32");
+		const name = Module.UTF8ToString(namePtr);
+
+		dataPtr += 4;
+		const valueStrPtr = Module.getValue(dataPtr, "i32");
+		const value = Module.UTF8ToString(valueStrPtr);
+		Module._free(valueStrPtr);
+
+		globals.push({ name: name, value: value });
+	}
+	Module._free(originalPtr);
+
+	return globals;
+}
+
 export function getDeftemplateText(moduleName: string, templateName: string): string {
 	const ptr = Module.GetDeftemplateText(Environment, moduleName, templateName);
 	return ptr ? Module.UTF8ToString(ptr) : "";
@@ -183,5 +206,10 @@ export function getDefclassText(moduleName: string, className: string): string {
 
 export function getDefruleText(moduleName: string, ruleName: string): string {
 	const ptr = Module.GetDefruleText(Environment, moduleName, ruleName);
+	return ptr ? Module.UTF8ToString(ptr) : "";
+}
+
+export function getDefglobalText(moduleName: string, globalName: string): string {
+	const ptr = Module.GetDefglobalText(Environment, moduleName, globalName);
 	return ptr ? Module.UTF8ToString(ptr) : "";
 }

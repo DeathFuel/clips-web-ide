@@ -38,9 +38,11 @@ interface ExtendedModule extends MainModule {
 	GetModuleAgenda(env: number, str: string): number;
 	GetModuleFacts(env: number, str: string): number;
 	GetModuleInstances(env: number, str: string): number;
+	GetModuleGlobals(env: number, str: string): number;
 	GetDeftemplateText(env: number, moduleName: string, name: string): number;
 	GetDefclassText(env: number, moduleName: string, name: string): number;
 	GetDefruleText(env: number, moduleName: string, name: string): number;
+	GetDefglobalText(env: number, moduleName: string, name: string): number;
 	SetWatchFlag(env: number, str: string, b: boolean): void;
 	GetWatchFlag(env: number, str: string): boolean;
 };
@@ -86,9 +88,11 @@ Module.LoadAndExecute = (env: number, str: string) => {
 Module.GetModuleAgenda = Module.cwrap("GetModuleAgenda", "number", ["number", "string"]);
 Module.GetModuleFacts = Module.cwrap("GetModuleFacts", "number", ["number", "string"]);
 Module.GetModuleInstances = Module.cwrap("GetModuleInstances", "number", ["number", "string"]);
+Module.GetModuleGlobals = Module.cwrap("GetModuleGlobals", "number", ["number", "string"]);
 Module.GetDeftemplateText = Module.cwrap("GetDeftemplateText", "number", ["number", "string", "string"]);
 Module.GetDefclassText = Module.cwrap("GetDefclassText", "number", ["number", "string", "string"]);
 Module.GetDefruleText = Module.cwrap("GetDefruleText", "number", ["number", "string", "string"]);
+Module.GetDefglobalText = Module.cwrap("GetDefglobalText", "number", ["number", "string", "string"]);
 Module.SetWatchFlag = Module.cwrap("SetWatchFlag", "void", ["number", "string", "boolean"]);
 Module.GetWatchFlag = Module.cwrap("GetWatchFlag", "boolean", ["number", "string"]);
 

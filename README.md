@@ -13,10 +13,10 @@ Press:
 The CLIPS console, which should work exactly like the default CLIPS REPL. Always present.
 ### Batch Input
 A code editor for executing entire programs at once. Checking `Clear console...` recreates the CLIPS environment and the Terminal's output log every time you send your code to CLIPS, which can be very convenient for rapid iteration (try appending `(reset)` and `(run)` to your program like the examples do).
-### Agenda Viewer, Fact Browser, Instance Browser
-Similar in behavior to their counterparts in the official IDEs. Each of these tabs might -- depending on program state -- contain a list of modules. Clicking on a module can then present its agenda, facts, or instances.
+### Agenda Viewer, Fact Browser, Instance Browser, Global Browser
+Similar in behavior to their counterparts in the official IDEs, though the Global Browser is an original addition. Each of these tabs might -- depending on program state -- contain a list of modules. Clicking on a module can then present its agenda, facts, instances, or globals.
 ### Construct Inspector
-Depending on what was clicked in one of the browser tabs, this tab can show an agenda item's defrule, a fact's deftemplate, or an instance's defclass.
+Shows a pretty-print form when certain items are clicked in different browsers. The tab can display an agenda item's defrule, a fact's deftemplate, an instance's defclass, or a global's defglobal statement.
 
 ## Local setup
 Run

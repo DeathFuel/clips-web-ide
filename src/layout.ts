@@ -6,6 +6,7 @@ import AgendaViewer from "./tabs/AgendaViewer.ts";
 import BatchInput from "./tabs/BatchInput.ts"
 import ConstructInspector from "./tabs/ConstructInspector.ts";
 import FactBrowser from "./tabs/FactBrowser.ts";
+import GlobalBrowser from "./tabs/GlobalBrowser.ts";
 import InstanceBrowser from "./tabs/InstanceBrowser.ts";
 import Terminal from "./tabs/Terminal.ts"
 import TabBase from "./tabs/TabBase.ts";
@@ -61,6 +62,7 @@ const tabs: Array<TabBase> = [
 	batch,
 	new AgendaViewer(),
 	new FactBrowser(),
+	new GlobalBrowser(),
 	new InstanceBrowser(),
 	new ConstructInspector(),
 ];
@@ -162,10 +164,11 @@ const defaultLayout = {
         {
             "type": "split-area",
             "orientation": "vertical",
-            "sizes": [ 0.25, 0.25, 0.25, 0.25 ],
+            "sizes": [ 0.2, 0.2, 0.2, 0.2, 0.2 ],
             "children": [
                 { "type": "tab-area", "currentIndex": 0, "widgets": [ "AgendaViewer" ] },
                 { "type": "tab-area", "currentIndex": 0, "widgets": [ "FactBrowser" ] },
+                { "type": "tab-area", "currentIndex": 0, "widgets": [ "GlobalBrowser" ] },
                 { "type": "tab-area", "currentIndex": 0, "widgets": [ "InstanceBrowser" ] },
                 { "type": "tab-area", "currentIndex": 0, "widgets": [ "ConstructInspector" ] }
             ]
