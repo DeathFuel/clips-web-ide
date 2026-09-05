@@ -1,7 +1,7 @@
 import TabBase from "./TabBase.ts";
 import htmlSrc from "./ConstructInspector.html?raw"
 
-import { getDeftemplateText, getDefclassText, getDefruleText } from "../data.ts";
+import { getDeftemplateText, getDefclassText, getDefglobalText, getDefruleText } from "../data.ts";
 
 export default class ConstructInspector extends TabBase {
 
@@ -32,5 +32,9 @@ export default class ConstructInspector extends TabBase {
 
 	public showDefrule(moduleName: string, ruleName: string) {
 		this.textArea.value = getDefruleText(moduleName, ruleName);
+	}
+
+	public showDefglobal(moduleName: string, globalName: string) {
+		this.textArea.value = getDefglobalText(moduleName, globalName);
 	}
 }

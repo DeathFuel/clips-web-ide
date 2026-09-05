@@ -13,3 +13,5 @@ export type Instance = {
 	class: string,
 	data: InstanceData
 };
+
+export type Global = { name: string, value: string };

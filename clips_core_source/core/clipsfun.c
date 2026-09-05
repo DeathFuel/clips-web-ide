@@ -318,6 +318,41 @@ int32_t* GetModuleInstances(Environment* env, const char* moduleName) {
 	RestoreCurrentModule(env);
 	return data;
 }
+
+EMSCRIPTEN_KEEPALIVE
+int32_t* GetModuleGlobals(Environment* env, const char* moduleName) {
+	Defmodule* module = FindDefmodule(env, moduleName);
+
+	SaveCurrentModule(env);
+	SetCurrentModule(env, module);
+	struct defmoduleItemHeader* moduleItem = GetModuleItem(env, module, DefglobalData(env)->DefglobalModuleIndex);
+	RestoreCurrentModule(env);
+
+	int count = 0;
+	for (ConstructHeader* construct = moduleItem->firstItem; construct != NULL; construct = construct->next) {
+		count++;
+	}
+
+	// Memory layout: name string pointer (not freed), value string pointer (freed)
+	int32_t* data = malloc((1 + 2 * count) * sizeof(*data));
+	data[0] = count;
+
+	int i = 0;
+	StringBuilder* sb = CreateStringBuilder(env, 16);
+	OpenStringBuilderDestination(env, "tmp", sb);
+	for (ConstructHeader* construct = moduleItem->firstItem; construct != NULL; construct = construct->next) {
+		Defglobal* g = (Defglobal*) construct;
+		WriteCLIPSValue(env, "tmp", &g->current);
+		data[1 + 2 * i] = (int32_t) g->header.name->contents;
+		data[2 + 2 * i] = (int32_t) SBCopy(sb);
+		SBReset(sb);
+		i++;
+	}
+	CloseStringBuilderDestination(env, "tmp");
+	SBDispose(sb);
+
+	return data;
+}
 #pragma clang diagnostic pop
 
 EMSCRIPTEN_KEEPALIVE
@@ -365,4 +400,18 @@ const char* GetDefruleText(Environment* env, const char* moduleName, const char*
 
 	if (rule == NULL) { return NULL; }
 	return DefrulePPForm(rule);
+}
+
+EMSCRIPTEN_KEEPALIVE
+const char* GetDefglobalText(Environment* env, const char* moduleName, const char* globalName) {
+	Defmodule* module = FindDefmodule(env, moduleName);
+	if (module == NULL) { return NULL; }
+
+	SaveCurrentModule(env);
+	SetCurrentModule(env, module);
+	Defglobal* g = FindDefglobal(env, globalName);
+	RestoreCurrentModule(env);
+
+	if (g == NULL) { return NULL; }
+	return DefglobalPPForm(g);
 }
