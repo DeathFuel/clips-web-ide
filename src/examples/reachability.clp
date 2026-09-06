@@ -1,4 +1,4 @@
-(defclass POINT (is-a USER)))
+(defclass POINT (is-a USER))
 (defclass ARC (is-a USER) (slot p1) (slot p2))
 
 (definstances POINTS
